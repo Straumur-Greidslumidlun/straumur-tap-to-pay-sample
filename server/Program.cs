@@ -1,61 +1,33 @@
-using StraumurTapToPaySample.Server.Api;
-using StraumurTapToPaySample.Server.Straumur;
+using System.Net.Http.Json;
 
-var builder = WebApplication.CreateBuilder(args);
+// Your Straumur credentials — kept server-side, never in the app. Replace these placeholders.
+const string BaseUrl = "https://checkout-api.staging.straumur.is";
+const string ApiKey = "REPLACE_WITH_YOUR_API_KEY";
+const string StoreMid = "1234567890";
 
-// Straumur credentials (API key + store MID) are bound from configuration and validated on
-// startup, so a misconfigured server fails fast instead of on the first request.
-builder.Services.AddOptions<StraumurOptions>()
-    .Bind(builder.Configuration.GetSection(StraumurOptions.SectionName))
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+var http = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+http.DefaultRequestHeaders.Add("X-API-key", ApiKey);
 
-builder.Services.AddHttpClient<StraumurTapToPayClient>();
+var app = WebApplication.Create(args);
 
-builder.Services.AddExceptionHandler<StraumurExceptionHandler>();
-builder.Services.AddProblemDetails();
+// The app calls these two endpoints. The server adds the API key + store MID, forwards to
+// Straumur, and reads Straumur's response straight back to the app.
 
-// The merchant app runs on a device and calls this server cross-origin. A real integrator
-// would lock this down to their own app's origin(s).
-builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy => policy
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowAnyOrigin()));
-
-var app = builder.Build();
-
-app.UseExceptionHandler();
-app.UseCors();
-
-// ---------------------------------------------------------------------------------------
-// The merchant app calls THESE endpoints. It never sees the Straumur API key or store MID;
-// this server holds them and brokers every call to Straumur's Checkout API.
-//
-// In production you would authenticate the app to this server with your own scheme (the
-// integrator's user/session auth) and derive the store from that identity, rather than
-// trusting anything client-supplied. That app-to-server auth is intentionally left out to
-// keep the Straumur flow front and center.
-// ---------------------------------------------------------------------------------------
-
-app.MapPost("/api/sessions", async (
-    CreateSessionRequest request,
-    StraumurTapToPayClient straumur,
-    CancellationToken cancellationToken) =>
+app.MapPost("/api/sessions", async (SessionRequest req) =>
 {
-    var result = await straumur.CreateSessionAsync(request, cancellationToken);
-    return Results.Ok(result);
+    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/sessions",
+        new { StoreMid, req.SetupToken, req.DeviceModel });
+    return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
 });
 
-app.MapPost("/api/payments", async (
-    CreatePaymentRequest request,
-    StraumurTapToPayClient straumur,
-    CancellationToken cancellationToken) =>
+app.MapPost("/api/payments", async (PaymentRequest req) =>
 {
-    var result = await straumur.CreatePaymentAsync(request, cancellationToken);
-    return Results.Ok(result);
+    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/payment",
+        new { StoreMid, req.PoiId, req.Amount, ExpectedCurrency = req.Currency });
+    return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
 });
 
-app.MapGet("/", () => "Straumur Tap to Pay sample server. POST /api/sessions and /api/payments.");
+app.Run("http://localhost:5080");
 
-app.Run();
+record SessionRequest(string SetupToken, string? DeviceModel);
+record PaymentRequest(string PoiId, decimal Amount, string Currency);
