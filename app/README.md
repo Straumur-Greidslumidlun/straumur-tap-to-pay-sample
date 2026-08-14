@@ -39,14 +39,17 @@ app/
 - A physical **Android 12+ device with NFC** and an Adyen **test card**.
 - The `../server` backend running with your Straumur API key + store MID.
 
-Put the Adyen SDK-download key in `~/.gradle/gradle.properties` (never commit it):
+Provide the Adyen SDK-download key via the gitignored local file (never committed):
 
-```properties
-adyenSdkApiKey=AQE...
+```bash
+cp adyen-sdk.properties.example adyen-sdk.properties
+# then set adyenSdkApiKey=AQE... in adyen-sdk.properties
 ```
 
-The config plugin adds Adyen's credentialed maven repo using that property and registers the
-payment-result launcher in `MainActivity`.
+At `expo prebuild` the config plugin reads this file and injects the key as the `adyenSdkApiKey`
+Gradle property to authenticate Adyen's maven repo (and registers the payment-result launcher in
+`MainActivity`). `adyen-sdk.properties` is gitignored; only the `.example` template is committed.
+Alternatives if you prefer: the `ADYEN_SDK_API_KEY` env var, or `~/.gradle/gradle.properties`.
 
 ## Run
 
