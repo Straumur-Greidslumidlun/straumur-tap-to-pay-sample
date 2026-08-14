@@ -1,0 +1,24 @@
+appId: com.straumur.taptopay.sample
+name: Board the device
+---
+# Boards this phone as a Tap to Pay device: the Adyen SDK produces a setupToken and boards
+# through your backend (/api/sessions), which brokers the session with Straumur. On success the
+# app stores the device POIID and switches to the payment screen.
+#
+# Requires: the ../server backend running with a real API key + store MID, and a dev build
+# (`npx expo run:android`) — the native Adyen module is not present in Expo Go.
+
+- launchApp:
+    clearState: true # start unboarded so we exercise the Setup screen
+
+- assertVisible: "Set up this device"
+
+- tapOn: "Set up device"
+
+# Boarding is a network round-trip plus SDK warm-up; give it room before asserting.
+- extendedWaitUntil:
+    visible: "Take a payment"
+    timeout: 60000
+
+# Landing on the charge screen means the device boarded and its POIID was persisted.
+- assertVisible: "Charge"

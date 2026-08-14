@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "e2e": "maestro test e2e/"
   },
   "dependencies": {
     "expo": "^56.0.0",

@@ -70,3 +70,9 @@ Expo Go. Type-check with `npm run tsc`.
 Walk **Set up this device** once (boards the phone), then **Take a payment**: enter an amount,
 tap **Charge**, and present the card when the Adyen UI appears. The result shows on the app and
 also arrives on your Straumur payment webhook, matched by the returned reference.
+
+## End-to-end tests
+
+[Maestro](https://maestro.mobile.dev) flows live in [`e2e/`](./e2e) — `npm run e2e`. They drive
+the app UI through boarding and the payment call; the contactless tap itself is hardware and
+can't be automated. See [`e2e/README.md`](./e2e/README.md).
