@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Straumur Tap to Pay Sample",
+    "slug": "straumur-taptopay-sample",
+    "scheme": "straumurtaptopaysample",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#002649",
+    "android": {
+      "package": "com.straumur.taptopay.sample",
+      "allowBackup": false
+    },
+    "ios": {
+      "bundleIdentifier": "com.straumur.taptopay.sample",
+      "supportsTablet": false
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 31,
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      "expo-status-bar"
+    ]
+  }
+}
