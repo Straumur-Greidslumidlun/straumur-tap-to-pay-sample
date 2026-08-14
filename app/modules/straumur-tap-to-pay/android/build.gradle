@@ -1,0 +1,39 @@
+apply plugin: 'com.android.library'
+apply plugin: 'org.jetbrains.kotlin.android'
+
+group = 'com.straumur.taptopay.module'
+version = '0.1.0'
+
+def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+useCoreDependencies()
+useExpoPublishing()
+
+android {
+  namespace "com.straumur.taptopay.module"
+  defaultConfig {
+    // Adyen Tap to Pay on Android requires API 31+.
+    minSdkVersion 31
+    compileSdkVersion safeExtGet("compileSdkVersion", 35)
+    targetSdkVersion safeExtGet("targetSdkVersion", 35)
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  // Adyen POS Mobile SDK (debug/test variants). The credentialed maven repo is added to the app's
+  // settings.gradle by the config plugin (app.plugin.js).
+  implementation "com.adyen.ipp:pos-mobile-debug:2.17.0"
+  implementation "com.adyen.ipp:payment-tap-to-pay-debug:2.17.0"
+}

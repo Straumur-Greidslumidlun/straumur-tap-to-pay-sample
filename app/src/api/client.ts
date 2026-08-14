@@ -1,13 +1,8 @@
 import { getServerBaseUrl } from "../config";
 
 // Responses from YOUR backend (which brokers to Straumur). The app never sees the API key.
-export type SessionResponse = {
-    installationId: string; // the device POIID — kept and sent back on payment
-    sdkData: string; // boarding data for the Adyen SDK
-    merchantAccount: string;
-    store: string;
-};
-
+// Note: the session/boarding call is made by the native module during board(), not from here —
+// this client only handles the payment call.
 export type PaymentResponse = {
     reference: string;
     amount: number;
@@ -55,10 +50,6 @@ const jsonPost = (body: unknown): RequestInit => ({
 });
 
 export const api = {
-    // Boards the device: your backend calls Straumur /integrator/sessions with the MID + key.
-    createSession: (setupToken: string, deviceModel?: string) =>
-        request<SessionResponse>("/api/sessions", jsonPost({ setupToken, deviceModel })),
-
     // Pre-creates a charge on the device (by POIID): your backend calls /integrator/payment.
     createPayment: (poiId: string, amount: number, currency: string) =>
         request<PaymentResponse>("/api/payments", jsonPost({ poiId, amount, currency })),

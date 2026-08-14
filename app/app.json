@@ -26,6 +26,8 @@
           }
         }
       ],
+      "./plugins/withStraumurTapToPay.js",
+      "./plugins/withShortCmakePath.js",
       "expo-status-bar"
     ]
   }

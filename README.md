@@ -6,15 +6,23 @@ Straumur API key.
 
 This sample shows the **correct, secure shape** of that integration:
 
+```mermaid
+flowchart LR
+    App["Merchant app (RN)<br/>Adyen POS SDK inside<br/>no API key, no MID"]
+    Backend["Your backend (.NET)<br/>holds API key + store MID"]
+    Straumur["Straumur Checkout API<br/>/taptopay/integrator/*"]
+    Adyen["Adyen"]
+
+    App -->|"HTTPS (no key)"| Backend
+    Backend -->|"X-API-key + storeMid"| Straumur
+    Straumur -.->|"Adyen account owner:<br/>boarding session + payment"| Adyen
+    App ==>|"Adyen POS SDK:<br/>boarding + contactless card read"| Adyen
 ```
-┌────────────────────┐        ┌──────────────────────────┐        ┌──────────────────────┐
-│  Merchant app (RN) │ ─────► │  Your backend (.NET)     │ ─────► │  Straumur Checkout   │
-│  no API key, no MID│  HTTPS │  holds API key + store   │ X-API- │  /taptopay/          │
-│                    │ ◄───── │  MID, brokers the calls  │  key   │    integrator/*      │
-└────────────────────┘        └──────────────────────────┘        └──────────────────────┘
-         │  Adyen Tap to Pay on Android SDK (contactless read) ▲
-         └────────────────────────────────────────────────────┘
-```
+
+Two separate paths: the **REST path** (app → your backend → Straumur) sets up the session and
+pre-creates each payment, while the **Adyen SDK inside the app talks to Adyen directly** to
+board the device and read the card. Straumur is the Adyen account owner, so it brokers the
+boarding session and the payment with Adyen — your app never sends card data anywhere itself.
 
 > **Why the split?** Your Straumur API key is a bearer credential for your whole account. It
 > must **never** ship inside a mobile app, where it can be extracted from the binary or
@@ -57,16 +65,17 @@ npm install
 npx expo run:android
 ```
 
-Each folder has its own README with the details. Taking a **real** payment additionally needs
-an Adyen account enabled for Tap to Pay, an SDK-download key, and a physical NFC device — the
-sample runs the full REST flow without those and stubs the native read until they're in place.
+Each folder has its own README with the details. Taking a payment needs an Adyen account
+enabled for Tap to Pay, an SDK-download key (in `~/.gradle/gradle.properties`), and a physical
+Android 12+ NFC device with a test card — see `app/README.md`. The native Adyen module requires
+a dev build (`expo run:android`), not Expo Go.
 
 ## Not included (intentionally)
 
-This is a starting point, not a drop-in production backend. Before going live you would add:
-app-to-server authentication, MID resolution per authenticated merchant, scoped CORS, and the
-real Adyen SDK bridge. Each is called out where it applies in the code and the per-folder
-READMEs.
+This is a starting point, not a drop-in production integration. Before going live you would add:
+app-to-server authentication and MID resolution per authenticated merchant (rather than the
+hardcoded key + MID in the sample backend). Each is called out where it applies in the code and
+the per-folder READMEs.
 
 ## License
 

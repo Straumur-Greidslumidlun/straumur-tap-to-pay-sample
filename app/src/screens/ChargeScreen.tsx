@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Alert } from "react-native";
 
 import { api, ApiError } from "../api/client";
@@ -9,13 +9,22 @@ import { TapToPay } from "../taptopay";
 /**
  * Take a payment on the boarded device.
  * Enter an amount -> your backend pre-creates the charge with Straumur and returns a nexo
- * SaleToPOIRequest -> hand it to the SDK for the contactless read. The authorization result
- * arrives later on your payment webhook, correlated by the returned reference.
+ * SaleToPOIRequest -> hand it to the Adyen SDK, which reads the card. The result is delivered
+ * asynchronously via onPaymentResult; the authorization also arrives on your payment webhook,
+ * correlated by the returned reference.
  */
 export function ChargeScreen({ poiId, onReset }: { poiId: string; onReset: () => void }) {
     const [amount, setAmount] = useState("");
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const subscription = TapToPay.addPaymentResultListener((result) => {
+            setBusy(false);
+            Alert.alert(result.success ? "Approved" : "Declined", result.message);
+        });
+        return () => subscription.remove();
+    }, []);
 
     async function charge() {
         const value = Number(amount);
@@ -28,13 +37,12 @@ export function ChargeScreen({ poiId, onReset }: { poiId: string; onReset: () =>
         setError(null);
         try {
             const payment = await api.createPayment(poiId, value, storeCurrency);
-            const result = await TapToPay.charge(payment.saleToPoiRequest);
-            Alert.alert(result.success ? "Approved" : "Declined", `${result.message}\n\nReference: ${payment.reference}`);
+            // The SDK now shows its tap UI; the outcome arrives on the onPaymentResult listener.
+            await TapToPay.charge(payment.saleToPoiRequest);
             setAmount("");
         } catch (e) {
-            setError(e instanceof ApiError ? e.message : "Payment failed. See the logs.");
-        } finally {
             setBusy(false);
+            setError(e instanceof ApiError ? e.message : "Payment failed. See the logs.");
         }
     }
 
