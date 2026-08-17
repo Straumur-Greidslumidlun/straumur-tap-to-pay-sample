@@ -34,8 +34,18 @@ boarding session and the payment with Adyen — your app never sends card data a
 
 | Folder | What it is | Stack |
 |---|---|---|
-| [`server/`](./server) | The integrator's backend. Holds the API key + MID and brokers the two Tap to Pay calls to Straumur. | ASP.NET Core (.NET 10) minimal API |
-| [`app/`](./app) | The merchant-facing app. Talks only to `server/`, then hands the returned data to the Adyen SDK for the contactless read. | Expo · React Native · TypeScript |
+| [`server/`](./server) | The integrator's backend — **shared by every app below**. Holds the API key + MID and brokers the two Tap to Pay calls to Straumur. | ASP.NET Core (.NET 10) minimal API |
+| [`app/android/`](./app/android) | Merchant app, **native**. The most direct integration — start here. | Kotlin · Compose |
+| [`app/react-native/`](./app/react-native) | Merchant app, cross-platform, over a local Expo module wrapping the SDK. | Expo · React Native · TypeScript |
+
+Both apps are **one file** each and do the same thing; pick whichever matches your stack. They
+share the same `server/`, so you only configure your API key once.
+
+> **On SDK support:** Adyen ships the Tap to Pay SDK for **native Android only** — there are no
+> official React Native or Flutter wrappers for it. (The `@adyen/react-native` and
+> `adyen_checkout` packages are for *online* checkout, a different product.) So `app/android/`
+> talks to the SDK directly, while `app/react-native/` includes a small Kotlin bridge we wrote
+> in `modules/straumur-tap-to-pay/`. A Flutter app would need the equivalent bridge.
 
 ## The flow
 
@@ -52,23 +62,27 @@ boarding session and the payment with Adyen — your app never sends card data a
 
 ## Getting started
 
-Run the backend, then the app:
+Run the backend, then one of the apps:
 
 ```bash
 # 1. backend — see server/README.md for configuring your API key + MID
 cd server
-dotnet run          # http://localhost:5080
+dotnet run                      # http://localhost:5080
 
-# 2. app — see app/README.md
-cd ../app
-npm install
-npx expo run:android
+# tunnel it to the phone over USB
+adb reverse tcp:5080 tcp:5080
+
+# 2a. native Android
+cd ../app/android && ./gradlew installDebug
+
+# 2b. …or React Native
+cd ../app/react-native && npm install && npx expo run:android
 ```
 
 Each folder has its own README with the details. Taking a payment needs an Adyen account
 enabled for Tap to Pay, an SDK-download key (in `~/.gradle/gradle.properties`), and a physical
-Android 12+ NFC device with a test card — see `app/README.md`. The native Adyen module requires
-a dev build (`expo run:android`), not Expo Go.
+Android 12+ NFC device with a test card. The React Native app needs a dev build
+(`expo run:android`), not Expo Go.
 
 ## Not included (intentionally)
 
