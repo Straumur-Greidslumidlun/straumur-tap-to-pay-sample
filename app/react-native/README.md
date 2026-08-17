@@ -30,12 +30,14 @@ app/
 
 ## Prerequisites for a real payment
 
-- An **Adyen account enabled for Tap to Pay**, and an SDK-download API key (Customer Area →
-  Developers → API credentials, role *"Allow SDK download for POS developers"*).
-- A physical **Android 12+ device with NFC** and an Adyen **test card**.
-- The `../server` backend running with your Straumur API key + store MID.
+**You do not need an Adyen account.** Straumur is the Adyen account owner and supplies everything:
 
-Provide the Adyen SDK-download key via the gitignored local file (never committed):
+- An **SDK-download key** — needed to download the Adyen POS Mobile SDK from Adyen's credentialed
+  maven repo. **Request it from Straumur.**
+- A **Straumur API key** and your **store MID**, for the `../server` backend.
+- A physical **Android 12+ device with NFC**, and a **test card** for testing.
+
+Provide the SDK-download key via the gitignored local file (never committed):
 
 ```bash
 cp adyen-sdk.properties.example adyen-sdk.properties

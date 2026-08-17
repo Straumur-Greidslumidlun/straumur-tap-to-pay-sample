@@ -24,7 +24,9 @@ The app never sends the API key or store MID — the server injects both.
 
 ## Configure + run
 
-Put your credentials in `secrets.json` — it is **gitignored**, so the key is never committed:
+Your **API key** and **store MID** come from Straumur — request them if you don't have them yet.
+
+Put them in `secrets.json` — it is **gitignored**, so the key is never committed:
 
 ```bash
 cd server

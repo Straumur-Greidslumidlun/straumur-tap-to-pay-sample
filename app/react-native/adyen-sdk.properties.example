@@ -1,8 +1,8 @@
 # Adyen SDK-download key — copy this file to `adyen-sdk.properties` (gitignored) and fill it in.
 #
-# Get it from the Adyen Customer Area: Developers -> API credentials -> a credential with the
-# role "Allow SDK download for POS developers". The config plugin reads this at `expo prebuild`
-# and injects it as the `adyenSdkApiKey` Gradle property to authenticate Adyen's maven repo.
+# Request the key from Straumur — you do not need an Adyen account of your own. The config plugin
+# reads this at `expo prebuild` and injects it as the `adyenSdkApiKey` Gradle property, which
+# authenticates the download of the Adyen POS Mobile SDK from Adyen's credentialed maven repo.
 #
 # Never commit the real key. `adyen-sdk.properties` is gitignored; this `.example` is not.
 adyenSdkApiKey=

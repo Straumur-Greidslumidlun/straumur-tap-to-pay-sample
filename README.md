@@ -60,6 +60,22 @@ share the same `server/`, so you only configure your API key once.
 4. **Result** — the authorization outcome arrives on your **payment webhook**, correlated by
    the `reference` from step 2 (not in the HTTP response — the card is read afterwards).
 
+## What you need from Straumur
+
+You do **not** need an Adyen account — Straumur is the Adyen account owner. Request these before
+you start:
+
+| | Used by | Where it goes |
+|---|---|---|
+| **Straumur API key** | `server/` | `server/secrets.json` (gitignored) |
+| **Store MID** | `server/` | `server/secrets.json` (gitignored) |
+| **Adyen SDK-download key** | the app build | `~/.gradle/gradle.properties` as `adyenSdkApiKey` |
+
+The SDK-download key is what lets Gradle pull the Adyen POS Mobile SDK from Adyen's credentialed
+maven repo. None of these belong in source control, and none of them ship inside the app.
+
+You will also need a physical **Android 12+ device with NFC** and a **test card**.
+
 ## Getting started
 
 Run the backend, then one of the apps:
@@ -79,10 +95,8 @@ cd ../app/android && ./gradlew installDebug
 cd ../app/react-native && npm install && npx expo run:android
 ```
 
-Each folder has its own README with the details. Taking a payment needs an Adyen account
-enabled for Tap to Pay, an SDK-download key (in `~/.gradle/gradle.properties`), and a physical
-Android 12+ NFC device with a test card. The React Native app needs a dev build
-(`expo run:android`), not Expo Go.
+Each folder has its own README with the details. The React Native app needs a dev build
+(`expo run:android`), not Expo Go — the Adyen SDK is a native module.
 
 ## Not included (intentionally)
 

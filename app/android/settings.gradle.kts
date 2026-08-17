@@ -15,8 +15,8 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
 
-        // Adyen POS Mobile SDK lives in a credentialed repo. Put your SDK-download key in
-        // ~/.gradle/gradle.properties as `adyenSdkApiKey` — never commit it.
+        // Adyen POS Mobile SDK lives in a credentialed repo. Request an SDK-download key from
+        // Straumur and put it in ~/.gradle/gradle.properties as `adyenSdkApiKey` — never commit it.
         maven {
             url = uri("https://pos-mobile-test.cdn.adyen.com/adyen-pos-android")
             credentials(HttpHeaderCredentials::class) {
