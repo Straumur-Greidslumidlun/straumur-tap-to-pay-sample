@@ -24,6 +24,10 @@ adyen-sdk.properties
 /app/android/
 /app/ios/
 
+# Gradle output inside the local native module (its source stays tracked).
+/app/modules/**/build/
+/app/modules/**/.gradle/
+
 # ---- OS / IDE ----
 .DS_Store
 Thumbs.db

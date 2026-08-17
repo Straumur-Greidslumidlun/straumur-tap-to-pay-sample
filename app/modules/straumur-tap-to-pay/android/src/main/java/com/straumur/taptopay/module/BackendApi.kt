@@ -1,5 +1,6 @@
 package com.straumur.taptopay.module
 
+import android.os.Build
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.net.HttpURLConnection
@@ -17,9 +18,12 @@ object BackendApi {
 
     /** Exchanges the SDK's setupToken for sdkData via the backend POST /api/sessions. */
     fun createSession(setupToken: String): String {
+        // Device info is read here, at the source, so JS never has to supply it.
         val body = JSONObject()
             .put("setupToken", setupToken)
-            .put("deviceModel", SessionStore.deviceModel)
+            .put("deviceModel", Build.MODEL)
+            .put("osVersion", Build.VERSION.RELEASE)
+            .put("appVersion", SessionStore.appVersion)
             .toString()
 
         val json = postJson("/api/sessions", body)

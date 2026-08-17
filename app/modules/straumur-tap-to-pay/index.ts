@@ -16,7 +16,7 @@ type StraumurTapToPayEvents = {
 
 declare class StraumurTapToPayNativeModule extends NativeModule<StraumurTapToPayEvents> {
     version(): string;
-    setBackend(baseUrl: string, deviceModel: string): void;
+    setBackend(baseUrl: string): void;
     board(): Promise<string>;
     clearSession(): Promise<void>;
     charge(saleToPoiRequest: string): Promise<void>;
@@ -42,8 +42,8 @@ export const StraumurTapToPay = {
     },
 
     /** Points the native boarding path at your backend (base URL) before board(). */
-    setBackend(baseUrl: string, deviceModel: string): void {
-        native().setBackend(baseUrl, deviceModel);
+    setBackend(baseUrl: string): void {
+        native().setBackend(baseUrl);
     },
 
     /**

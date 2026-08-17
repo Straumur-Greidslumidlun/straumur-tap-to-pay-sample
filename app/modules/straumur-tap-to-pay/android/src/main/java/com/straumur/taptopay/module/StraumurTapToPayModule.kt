@@ -21,6 +21,10 @@ class StraumurTapToPayModule : Module() {
         OnCreate {
             // Forward Adyen transaction results (delivered to the launcher registered in MainActivity) to JS.
             TapToPayCheckout.listener = { result -> sendEvent("onPaymentResult", result) }
+
+            SessionStore.appVersion = appContext.reactContext?.let { ctx ->
+                runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull()
+            }.orEmpty()
         }
 
         OnDestroy {
@@ -32,9 +36,8 @@ class StraumurTapToPayModule : Module() {
 
         // Point the native boarding path at your backend. No tokens — the backend holds the
         // Straumur API key + store MID and brokers /api/sessions to Straumur.
-        Function("setBackend") { baseUrl: String, deviceModel: String ->
+        Function("setBackend") { baseUrl: String ->
             SessionStore.baseUrl = baseUrl
-            SessionStore.deviceModel = deviceModel
         }
 
         AsyncFunction("board") { promise: Promise ->

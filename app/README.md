@@ -7,27 +7,23 @@ Straumur API key.
 ## Flow
 
 ```
-Setup   ──►  TapToPay.setBackend(url)  ──►  TapToPay.board()
-             (SDK makes a setupToken -> your backend /api/sessions -> sdkData, all inside the
-              native module) -> resolves the device POIID
-Charge  ──►  POST /api/payments  ──►  TapToPay.charge(saleToPoiRequest)  ──►  onPaymentResult
+on launch  ──►  TapToPay.setBackend(url)  ──►  TapToPay.board()
+                (the SDK makes a setupToken and boards through your backend /api/sessions
+                 -> sdkData, all inside the native module) -> resolves the device POIID
+Charge     ──►  POST /api/payments  ──►  TapToPay.charge(saleToPoiRequest)  ──►  onPaymentResult
 ```
 
-Only the device **POIID** is persisted (secure store). Present → **Take a payment**; absent →
-**Set up this device**. The `setupToken` and `sdkData` are handled inside the native module —
-they never surface to JS.
+The device boards on every launch — the SDK caches its session, so only the first one hits
+`/api/sessions`. The `setupToken` and `sdkData` are handled inside the native module and never
+surface to JS, and device info (model, OS, app version) is read natively at the source.
 
 ## Structure
 
+The whole app is **one file** — [`App.tsx`](./App.tsx), ~120 lines including styles:
+
 ```
 app/
-  App.tsx                          status (boarded?) -> Setup or Charge
-  src/
-    config.ts                      YOUR backend URL (not Straumur) + display currency
-    api/client.ts                  POST /api/payments (the session call is native, in board())
-    taptopay/index.ts              re-exports the native module as `TapToPay`
-    screens/                       SetupScreen, ChargeScreen
-    components/Brand.tsx            themed Screen / Button / Field
+  App.tsx                          the entire app: board on launch, enter amount, charge
   modules/straumur-tap-to-pay/     local Expo module wrapping the Adyen POS Mobile SDK (Android)
   plugins/                         config plugins: Adyen maven repo + MainActivity registration
 ```
@@ -67,12 +63,6 @@ npx expo run:android
 The native Adyen module requires a **dev build** (`expo run:android`) — it is not available in
 Expo Go. Type-check with `npm run tsc`.
 
-Walk **Set up this device** once (boards the phone), then **Take a payment**: enter an amount,
-tap **Charge**, and present the card when the Adyen UI appears. The result shows on the app and
-also arrives on your Straumur payment webhook, matched by the returned reference.
-
-## End-to-end tests
-
-[Maestro](https://maestro.mobile.dev) flows live in [`e2e/`](./e2e) — `npm run e2e`. They drive
-the app UI through boarding and the payment call; the contactless tap itself is hardware and
-can't be automated. See [`e2e/README.md`](./e2e/README.md).
+The app boards the device on launch, then shows **Take a payment** with the amount prefilled
+(1000 ISK). Tap **Charge** and present the card when the Adyen UI appears. The result shows in
+the app and also arrives on your Straumur payment webhook, matched by the returned reference.

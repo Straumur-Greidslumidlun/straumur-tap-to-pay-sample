@@ -16,7 +16,6 @@
       "supportsTablet": false
     },
     "plugins": [
-      "expo-secure-store",
       [
         "expo-build-properties",
         {
@@ -27,8 +26,7 @@
         }
       ],
       "./plugins/withStraumurTapToPay.js",
-      "./plugins/withShortCmakePath.js",
-      "expo-status-bar"
+      "./plugins/withShortCmakePath.js"
     ]
   }
 }
