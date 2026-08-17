@@ -24,14 +24,24 @@ The app never sends the API key or store MID — the server injects both.
 
 ## Configure + run
 
-Set your credentials at the top of `Program.cs` (placeholders ship in-file):
+Put your credentials in `secrets.json` — it is **gitignored**, so the key is never committed:
 
-```csharp
-const string ApiKey  = "REPLACE_WITH_YOUR_API_KEY";
-const string StoreMid = "1234567890";
+```bash
+cd server
+cp secrets.example.json secrets.json
+# then fill in ApiKey + StoreMid
 ```
 
-Then:
+```json
+{
+  "BaseUrl": "https://checkout-api.staging.straumur.is",
+  "ApiKey": "YOUR_STRAUMUR_API_KEY",
+  "StoreMid": "YOUR_STORE_MID"
+}
+```
+
+Environment variables (`ApiKey=…`, `StoreMid=…`) work too and take precedence over the file's
+absence. Then:
 
 ```bash
 cd server

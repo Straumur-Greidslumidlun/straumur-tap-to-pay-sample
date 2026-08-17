@@ -4,7 +4,8 @@ obj/
 *.user
 .vs/
 
-# Secrets — never commit API keys. Use env vars or user-secrets (see server/README.md).
+# Secrets — never commit API keys. Real values go in secrets.json (the .example is kept).
+secrets.json
 appsettings.*.local.json
 *.secrets.json
 
