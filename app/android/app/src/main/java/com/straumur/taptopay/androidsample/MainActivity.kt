@@ -26,10 +26,12 @@ import com.adyen.ipp.api.InPersonPayments
 import com.adyen.ipp.api.authentication.AuthenticationProvider
 import com.adyen.ipp.api.authentication.AuthenticationResponse
 import com.adyen.ipp.api.authentication.MerchantAuthenticationService
+import com.adyen.ipp.api.initialization.InitializationState
 import com.adyen.ipp.api.payment.PaymentInterfaceType
 import com.adyen.ipp.api.payment.TransactionRequest
 import com.adyen.ipp.api.ui.MerchantUiParameters
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -122,6 +124,14 @@ class MainActivity : ComponentActivity() {
         // session, so only the first launch actually calls /api/sessions.
         lifecycleScope.launch {
             runCatching {
+                // The SDK initializes asynchronously (App Startup), so wait for it to settle —
+                // calling warmUp() before that fails with "IPP SDK is not initialized".
+                val state = InPersonPayments.initialized.first { it !is InitializationState.AwaitingInitialization }
+
+                if (state is InitializationState.FailedInitialization) {
+                    error("SDK initialization failed: ${state.failureReasons.joinToString()}")
+                }
+
                 InPersonPayments.warmUp().getOrThrow()
                 InPersonPayments.getInstallationId().getOrThrow()
             }

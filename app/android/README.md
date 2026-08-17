@@ -60,6 +60,25 @@ The app boards the device on launch and shows **Take a payment** with the amount
 (1000 ISK). Tap **Charge** and present the card when the Adyen UI appears. The result shows in
 the app and also arrives on your Straumur payment webhook, matched by the returned reference.
 
+## Gotcha: wait for SDK initialization
+
+The Adyen SDK initializes **asynchronously** (via App Startup, in its own `:ipp` process). Calling
+`warmUp()` straight from `onCreate` loses that race and fails with:
+
+```
+IPP SDK is not initialized. State: `AwaitingInitialization`
+```
+
+So board only once the state has settled:
+
+```kotlin
+val state = InPersonPayments.initialized.first { it !is InitializationState.AwaitingInitialization }
+if (state is InitializationState.FailedInitialization) { /* state.failureReasons */ }
+```
+
+Cross-platform apps often mask this by accident — a React Native app spends seconds loading its JS
+bundle first, which gives the SDK time to initialize. A native app starts far faster.
+
 ## Notes for a real integration
 
 - `SERVER_URL` is a constant at the top of `MainActivity.kt` — move it to a build config field.
