@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <!-- Local, gitignored credentials — copied to the output so `dotnet run` picks them up. -->
-    <Content Include="secrets.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('secrets.json')" />
+    <Content Update="secrets.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('secrets.json')" />
   </ItemGroup>
 
 </Project>
