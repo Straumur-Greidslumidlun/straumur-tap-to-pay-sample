@@ -19,16 +19,25 @@ request, read the response straight back to the app.
 |---|---|---|---|
 | `POST` | `/api/sessions` | `{ setupToken, deviceModel?, osVersion?, appVersion? }` | Straumur's session response (`installationId`, `sdkData`, …) |
 | `POST` | `/api/payments` | `{ poiId, amount, currency }` | Straumur's payment response (`reference`, `saleToPoiRequest`, …) |
-| `POST` | `/api/devices/disable` | `{ poiId }` | Straumur's disable response (`poiId`, `status`) |
 
 `amount` is in **minor units**, like every Straumur Checkout API amount: ISK has 2 decimals, so
 1000 ISK is `100000`. Amounts below the currency minimum are rejected.
 
 The app never sends the API key or store MID — the server injects both.
 
-A disabled device can no longer get a session or take a payment, across all of your stores. Disabling a device
-that is already disabled is rejected with error `2048`. The sample app has a button for it so the flow can be
-tried end to end; in a real integration, keep this in your back office.
+## Disabling a device (back office)
+
+When a phone is lost or retired, disable it from your server, never from the app:
+
+```bash
+cd server
+dotnet run -- disable <poiId>
+```
+
+This calls Straumur `…/integrator/devices/disable` with your store MID and prints the response. A disabled
+device can no longer get a session or take a payment, in any of your stores. Disabling a device that is already
+disabled is rejected with error `2048`. The POIID is the device's Adyen installation id (shown in the app and on
+each payment).
 
 Rejections come back as `400` with `{ errorMessage, errorCode, responseIdentifier }`; quote the
 `responseIdentifier` when contacting Straumur support.

@@ -13,6 +13,19 @@ var storeMid = builder.Configuration["StoreMid"] ?? "1234567890";
 var http = new HttpClient { BaseAddress = new Uri(baseUrl) };
 http.DefaultRequestHeaders.Add("X-API-key", apiKey);
 
+// Back office: `dotnet run -- disable <poiId>` disables a device (e.g. a lost or retired phone) and exits. It is not
+// an HTTP route on purpose — the app must never be able to disable a device; in a real integration this is an action
+// in your own back office or support tooling. A disabled device can no longer get a session or take a payment, in any
+// of your stores, and disabling it again is rejected with error 2048.
+if (args is ["disable", var poiIdToDisable])
+{
+    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/devices/disable",
+        new { storeMid, PoiId = poiIdToDisable });
+    Console.WriteLine($"HTTP {(int)res.StatusCode}: {await res.Content.ReadAsStringAsync()}");
+
+    return res.IsSuccessStatusCode ? 0 : 1;
+}
+
 var app = builder.Build();
 
 // The app calls these two endpoints. The server adds the API key + store MID, forwards to
@@ -32,20 +45,11 @@ app.MapPost("/api/payments", async (PaymentRequest req) =>
     return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
 });
 
-// Disabling a device (e.g. a lost or retired phone) stops it minting sessions and taking payments. Straumur rejects
-// a second disable of the same device with error 2048. In a real integration this is an action for your own back
-// office, not something every app user can trigger.
-app.MapPost("/api/devices/disable", async (DisableRequest req) =>
-{
-    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/devices/disable",
-        new { storeMid, req.PoiId });
-    return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
-});
-
 app.Run("http://localhost:5080");
+
+return 0;
 
 record SessionRequest(string SetupToken, string? DeviceModel, string? OsVersion, string? AppVersion);
 
 // Amount is in minor units, like every Straumur Checkout API amount (ISK has 2 decimals, so 1000 ISK = 100000).
 record PaymentRequest(string PoiId, long Amount, string Currency);
-record DisableRequest(string PoiId);
