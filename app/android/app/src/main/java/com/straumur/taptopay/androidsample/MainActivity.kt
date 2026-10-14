@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -178,6 +179,23 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Your backend has Straumur disable this device: its later sessions and payments are rejected.
+    private fun disable() {
+        val device = poiId ?: return
+        busy = true
+        status = null
+
+        lifecycleScope.launch {
+            status = runCatching {
+                withContext(Dispatchers.IO) {
+                    post("/api/devices/disable", JSONObject().put("poiId", device))
+                }
+                "Device disabled"
+            }.getOrElse { it.message }
+            busy = false
+        }
+    }
+
     @Composable
     private fun Ui() {
         MaterialTheme {
@@ -209,6 +227,14 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(if (busy) "Waiting for card…" else "Charge")
+                    }
+
+                    OutlinedButton(
+                        onClick = ::disable,
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Disable this device")
                     }
 
                     status?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }

@@ -60,6 +60,8 @@ share the same `server/`, so you only configure your API key once.
    on the device.
 4. **Result** — the authorization outcome arrives on your **payment webhook**, correlated by
    the `reference` from step 2 (not in the HTTP response — the card is read afterwards).
+5. **Disable** (when a phone is lost or retired) — POST `{ poiId }` to your `server/`, which calls
+   Straumur `…/integrator/devices/disable`. That device's later sessions and payments are rejected.
 
 ## What you need from Straumur
 

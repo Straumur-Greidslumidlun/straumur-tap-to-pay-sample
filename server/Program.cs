@@ -32,9 +32,20 @@ app.MapPost("/api/payments", async (PaymentRequest req) =>
     return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
 });
 
+// Disabling a device (e.g. a lost or retired phone) stops it minting sessions and taking payments. Straumur rejects
+// a second disable of the same device with error 2048. In a real integration this is an action for your own back
+// office, not something every app user can trigger.
+app.MapPost("/api/devices/disable", async (DisableRequest req) =>
+{
+    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/devices/disable",
+        new { storeMid, req.PoiId });
+    return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
+});
+
 app.Run("http://localhost:5080");
 
 record SessionRequest(string SetupToken, string? DeviceModel, string? OsVersion, string? AppVersion);
 
 // Amount is in minor units, like every Straumur Checkout API amount (ISK has 2 decimals, so 1000 ISK = 100000).
 record PaymentRequest(string PoiId, long Amount, string Currency);
+record DisableRequest(string PoiId);

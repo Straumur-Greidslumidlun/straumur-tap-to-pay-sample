@@ -65,6 +65,29 @@ export default function App() {
         }
     }
 
+    // Your backend has Straumur disable this device: its later sessions and payments are rejected.
+    async function disable() {
+        setBusy(true);
+        setError(null);
+        try {
+            const response = await fetch(`${SERVER_URL}/api/devices/disable`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ poiId }),
+            });
+            const body = await response.json();
+
+            if (!response.ok) {
+                throw new Error(body.errorMessage ?? `Request failed (${response.status}).`);
+            }
+
+            setBusy(false);
+            Alert.alert("Device disabled", `${body.poiId} can no longer take payments.`);
+        } catch (e) {
+            showError(e);
+        }
+    }
+
     return (
         <View style={styles.screen}>
             <Text style={styles.heading}>Take a payment</Text>
@@ -82,6 +105,9 @@ export default function App() {
                     />
                     <Pressable style={styles.button} onPress={charge} disabled={busy}>
                         {busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Charge</Text>}
+                    </Pressable>
+                    <Pressable style={styles.secondaryButton} onPress={disable} disabled={busy}>
+                        <Text style={styles.secondaryButtonText}>Disable this device</Text>
                     </Pressable>
                 </>
             ) : (
@@ -113,4 +139,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     buttonText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+    secondaryButton: {
+        borderWidth: 1,
+        borderColor: "#002649",
+        borderRadius: 14,
+        paddingVertical: 16,
+        alignItems: "center",
+    },
+    secondaryButtonText: { fontSize: 16, fontWeight: "600", color: "#002649" },
 });
