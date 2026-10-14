@@ -52,7 +52,8 @@ share the same `server/`, so you only configure your API key once.
 1. **Session** — the app gets a `setupToken` from the Adyen SDK and POSTs it to your
    `server/`, which calls Straumur `…/integrator/sessions`. Straumur lazily provisions the
    device (keyed on its POIID within your store) and returns `sdkData` to board the SDK.
-2. **Payment** — for a charge, the app POSTs `{ poiId, amount, currency }` to your `server/`,
+2. **Payment** — for a charge, the app POSTs `{ poiId, amount, currency }` (amount in minor
+   units, so 1000 ISK is `100000`) to your `server/`,
    which calls Straumur `…/integrator/payment`. Straumur pre-creates the payment and returns a
    ready-to-run Adyen `SaleToPOIRequest`.
 3. **Read** — the app hands that request to the Adyen SDK, which performs the contactless read
