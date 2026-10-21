@@ -13,19 +13,6 @@ var storeMid = builder.Configuration["StoreMid"] ?? "1234567890";
 var http = new HttpClient { BaseAddress = new Uri(baseUrl) };
 http.DefaultRequestHeaders.Add("X-API-key", apiKey);
 
-// Back office: `dotnet run -- disable <poiId>` disables a device (e.g. a lost or retired phone) and exits. It is not
-// an HTTP route on purpose — the app must never be able to disable a device; in a real integration this is an action
-// in your own back office or support tooling. A disabled device can no longer get a session or take a payment, in any
-// of your stores, and disabling it again is rejected with error 2048.
-if (args is ["disable", var poiIdToDisable])
-{
-    var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/devices/disable",
-        new { storeMid, PoiId = poiIdToDisable });
-    Console.WriteLine($"HTTP {(int)res.StatusCode}: {await res.Content.ReadAsStringAsync()}");
-
-    return res.IsSuccessStatusCode ? 0 : 1;
-}
-
 var app = builder.Build();
 
 // The app calls these two endpoints. The server adds the API key + store MID, forwards to
@@ -46,8 +33,6 @@ app.MapPost("/api/payments", async (PaymentRequest req) =>
 });
 
 app.Run("http://localhost:5080");
-
-return 0;
 
 record SessionRequest(string SetupToken, string? DeviceModel, string? OsVersion, string? AppVersion);
 

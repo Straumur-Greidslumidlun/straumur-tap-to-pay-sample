@@ -60,9 +60,20 @@ share the same `server/`, so you only configure your API key once.
    on the device.
 4. **Result** — the authorization outcome arrives on your **payment webhook**, correlated by
    the `reference` from step 2 (not in the HTTP response — the card is read afterwards).
-5. **Disable** (when a phone is lost or retired) — from your back office, never the app: your server calls
-   Straumur `…/integrator/devices/disable` with the device's `poiId`. That device's later sessions and payments
-   are rejected. The sample does this with `dotnet run -- disable <poiId>` in `server/`.
+
+To retire a phone (lost, replaced), have your server stop serving it: without new sessions and payments from your
+backend, it can't take payments. Straumur can also disable a device on its side if you ask.
+
+## Keep the Adyen SDK up to date — or payments stop
+
+> [!WARNING]
+> Adyen expires **every** Tap to Pay SDK version six months after its release. Once the version in your app expires,
+> **Tap to Pay payments stop working** on every phone running it, and about a year later the version is withdrawn
+> entirely. Adyen does not backport fixes, so the only way forward is the latest version.
+>
+> An app you build once and leave alone will stop taking payments within six months. Plan a recurring SDK upgrade and
+> app release from the start, and check each version's expiry date in Adyen's release notes. This sample pins
+> `adyenVersion` in [`app/android/app/build.gradle.kts`](./app/android/app/build.gradle.kts) — bump it there too.
 
 ## What you need from Straumur
 
