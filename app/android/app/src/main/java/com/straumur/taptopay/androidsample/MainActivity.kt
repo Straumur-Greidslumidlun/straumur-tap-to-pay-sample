@@ -47,6 +47,9 @@ import java.net.URL
 private const val SERVER_URL = "http://127.0.0.1:5080"
 private const val CURRENCY = "ISK"
 
+// Straumur takes amounts in minor units; ISK has 2 decimals there, so 1000 ISK is sent as 100000.
+private const val CURRENCY_DECIMALS = 2
+
 /**
  * POSTs JSON to your backend and returns the parsed response. Plain HttpURLConnection so the
  * sample has no HTTP-client dependency; use Retrofit/OkHttp in a real app.
@@ -152,7 +155,7 @@ class MainActivity : ComponentActivity() {
                         "/api/payments",
                         JSONObject()
                             .put("poiId", poiId)
-                            .put("amount", amount.toBigDecimal())
+                            .put("amount", amount.toBigDecimal().movePointRight(CURRENCY_DECIMALS).longValueExact())
                             .put("currency", CURRENCY),
                     ).getString("saleToPoiRequest")
                 }

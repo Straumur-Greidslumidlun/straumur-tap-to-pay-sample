@@ -52,13 +52,28 @@ share the same `server/`, so you only configure your API key once.
 1. **Session** — the app gets a `setupToken` from the Adyen SDK and POSTs it to your
    `server/`, which calls Straumur `…/integrator/sessions`. Straumur lazily provisions the
    device (keyed on its POIID within your store) and returns `sdkData` to board the SDK.
-2. **Payment** — for a charge, the app POSTs `{ poiId, amount, currency }` to your `server/`,
+2. **Payment** — for a charge, the app POSTs `{ poiId, amount, currency }` (amount in minor
+   units, so 1000 ISK is `100000`) to your `server/`,
    which calls Straumur `…/integrator/payment`. Straumur pre-creates the payment and returns a
    ready-to-run Adyen `SaleToPOIRequest`.
 3. **Read** — the app hands that request to the Adyen SDK, which performs the contactless read
    on the device.
 4. **Result** — the authorization outcome arrives on your **payment webhook**, correlated by
    the `reference` from step 2 (not in the HTTP response — the card is read afterwards).
+
+To retire a phone (lost, replaced), have your server stop serving it: without new sessions and payments from your
+backend, it can't take payments. Straumur can also disable a device on its side if you ask.
+
+## Keep the Adyen SDK up to date — or payments stop
+
+> [!WARNING]
+> Adyen expires **every** Tap to Pay SDK version six months after its release. Once the version in your app expires,
+> **Tap to Pay payments stop working** on every phone running it, and about a year later the version is withdrawn
+> entirely. Adyen does not backport fixes, so the only way forward is the latest version.
+>
+> An app you build once and leave alone will stop taking payments within six months. Plan a recurring SDK upgrade and
+> app release from the start, and check each version's expiry date in Adyen's release notes. This sample pins
+> `adyenVersion` in [`app/android/app/build.gradle.kts`](./app/android/app/build.gradle.kts) — bump it there too.
 
 ## What you need from Straumur
 

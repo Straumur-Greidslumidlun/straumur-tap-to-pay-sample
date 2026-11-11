@@ -21,7 +21,7 @@ var app = builder.Build();
 app.MapPost("/api/sessions", async (SessionRequest req) =>
 {
     var res = await http.PostAsJsonAsync("/api/v1/taptopay/integrator/sessions",
-        new { storeMid, req.SetupToken, req.DeviceModel });
+        new { storeMid, req.SetupToken, req.DeviceModel, req.OsVersion, req.AppVersion });
     return Results.Content(await res.Content.ReadAsStringAsync(), "application/json", statusCode: (int)res.StatusCode);
 });
 
@@ -34,5 +34,7 @@ app.MapPost("/api/payments", async (PaymentRequest req) =>
 
 app.Run("http://localhost:5080");
 
-record SessionRequest(string SetupToken, string? DeviceModel);
-record PaymentRequest(string PoiId, decimal Amount, string Currency);
+record SessionRequest(string SetupToken, string? DeviceModel, string? OsVersion, string? AppVersion);
+
+// Amount is in minor units, like every Straumur Checkout API amount (ISK has 2 decimals, so 1000 ISK = 100000).
+record PaymentRequest(string PoiId, long Amount, string Currency);

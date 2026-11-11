@@ -8,6 +8,9 @@ import { StraumurTapToPay as TapToPay } from "./modules/straumur-tap-to-pay";
 const SERVER_URL = process.env.EXPO_PUBLIC_SERVER_BASE_URL ?? "http://127.0.0.1:5080";
 const CURRENCY = "ISK";
 
+// Straumur takes amounts in minor units; ISK has 2 decimals there, so 1000 ISK is sent as 100000.
+const CURRENCY_DECIMALS = 2;
+
 export default function App() {
     const [poiId, setPoiId] = useState<string | null>(null);
     const [amount, setAmount] = useState("1000");
@@ -43,7 +46,11 @@ export default function App() {
             const response = await fetch(`${SERVER_URL}/api/payments`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ poiId, amount: Number(amount), currency: CURRENCY }),
+                body: JSON.stringify({
+                    poiId,
+                    amount: Math.round(Number(amount) * 10 ** CURRENCY_DECIMALS),
+                    currency: CURRENCY,
+                }),
             });
             const body = await response.json();
 
